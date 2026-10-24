@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Olymp Trade Pro 1M Scalper</title>
+  <title>Olymp Trade Pro Live Chart & Signal Bot</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: #0b0e14; color: #ffffff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 14px; }
+    body { background-color: #0b0e14; color: #ffffff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 12px; }
     
     .header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #1a2332; }
     .logo { font-size: 15px; font-weight: 800; color: #00e5ff; }
@@ -16,44 +16,41 @@
     .timer-bar { width: 100%; margin-top: 10px; background: #121926; border: 1px solid #1f2b3e; border-radius: 8px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
     .timer-sec { font-size: 14px; font-weight: 800; color: #00e5ff; }
 
-    .controls { width: 100%; margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
-    select, input { background: #141b26; border: 1px solid #243247; color: white; padding: 11px; border-radius: 10px; font-size: 13px; outline: none; width: 100%; font-weight: 600; }
-    
-    .market-box { width: 100%; margin-top: 12px; background: #101622; border: 1px solid #1e293b; border-radius: 10px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; }
+    .controls { width: 100%; margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+    select { background: #141b26; border: 1px solid #243247; color: white; padding: 11px; border-radius: 10px; font-size: 13px; outline: none; width: 100%; font-weight: 600; }
+
+    /* Real-Time Live Chart Styling */
+    .chart-container { width: 100%; height: 320px; margin-top: 12px; background: #101622; border: 1px solid #1e293b; border-radius: 12px; overflow: hidden; position: relative; }
+    #tradingview_widget { width: 100%; height: 100%; }
+
+    .market-box { width: 100%; margin-top: 12px; background: #101622; border: 1px solid #1e293b; border-radius: 10px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
     .price-label { font-size: 11px; color: #8fa0b5; }
     .price-val { font-size: 16px; font-weight: 800; color: #fff; margin-top: 2px; }
     .target-val { font-size: 14px; color: #00e5ff; font-weight: 800; margin-top: 2px; }
 
-    .radar-container { margin-top: 16px; position: relative; width: 110px; height: 110px; display: flex; justify-content: center; align-items: center; }
-    .circle-outer { position: absolute; width: 100px; height: 100px; border-radius: 50%; border: 2px dashed rgba(0, 229, 255, 0.3); }
-    .circle-spin { position: absolute; width: 85px; height: 85px; border-radius: 50%; border: 3px solid transparent; border-top: 3px solid #00e5ff; border-right: 3px solid #00e5ff; animation: spin 1s linear infinite; display: none; }
-    .circle-inner { width: 55px; height: 55px; background: radial-gradient(circle, rgba(0,229,255,0.15) 0%, rgba(11,14,20,1) 80%); border: 1px solid rgba(0, 229, 255, 0.4); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    .status-title { margin-top: 12px; font-size: 15px; font-weight: 700; color: #fff; }
-    .sub-asset { font-size: 11px; color: #8fa0b5; margin-top: 3px; }
-
-    .signal-card { width: 100%; margin-top: 14px; padding: 14px; border-radius: 12px; text-align: center; display: none; }
+    .signal-card { width: 100%; margin-top: 12px; padding: 12px; border-radius: 12px; text-align: center; display: none; }
     .signal-buy { background: linear-gradient(135deg, rgba(0, 230, 118, 0.2), rgba(0, 200, 83, 0.05)); border: 2px solid #00e676; }
     .signal-sell { background: linear-gradient(135deg, rgba(255, 42, 85, 0.2), rgba(213, 0, 0, 0.05)); border: 2px solid #ff2a55; }
     .signal-wait { background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 160, 0, 0.05)); border: 2px solid #ffc107; }
     
-    .signal-text { font-size: 24px; font-weight: 900; }
+    .signal-text { font-size: 22px; font-weight: 900; }
     .signal-buy .signal-text { color: #00e676; }
     .signal-sell .signal-text { color: #ff2a55; }
     .signal-wait .signal-text { color: #ffc107; }
 
-    .signal-details { margin-top: 10px; background: rgba(0,0,0,0.35); border-radius: 8px; padding: 10px; font-size: 12px; line-height: 1.6; text-align: left; }
+    .signal-details { margin-top: 8px; background: rgba(0,0,0,0.35); border-radius: 8px; padding: 8px; font-size: 12px; line-height: 1.5; text-align: left; }
     
-    .btn-generate { width: 100%; margin-top: 14px; background: linear-gradient(90deg, #0088cc, #00e5ff); color: #000; font-weight: 800; font-size: 14px; border: none; cursor: pointer; border-radius: 10px; padding: 13px; }
+    .btn-generate { width: 100%; margin-top: 12px; background: linear-gradient(90deg, #0088cc, #00e5ff); color: #000; font-weight: 800; font-size: 14px; border: none; cursor: pointer; border-radius: 10px; padding: 13px; }
     .btn-generate:disabled { opacity: 0.5; }
   </style>
+  <!-- TradingView Library -->
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 </head>
 <body>
 
   <div class="header">
-    <div class="logo">⚡ OLYMP 1M ATR SCALPER</div>
-    <div class="status-badge"><span class="pulse-dot"></span> REAL MATH</div>
+    <div class="logo">⚡ LIVE CHART & SCALPER</div>
+    <div class="status-badge"><span class="pulse-dot"></span> REALTIME</div>
   </div>
 
   <div class="timer-bar">
@@ -62,17 +59,23 @@
   </div>
 
   <div class="controls">
-    <select id="assetSelect">
-      <option value="BTCUSDT">Bitcoin (BTC/USDT) - Real Feed</option>
-      <option value="ETHUSDT">Ethereum (ETH/USDT) - Real Feed</option>
-      <option value="SOLUSDT">Solana (SOL/USDT) - Real Feed</option>
-      <option value="ASIA_IDX">Asia Composite Index (Simulated ATR)</option>
+    <select id="assetSelect" onchange="updateChart()">
+      <option value="BINANCE:BTCUSDT" data-symbol="BTCUSDT">Bitcoin (BTC/USDT) - Realtime Chart</option>
+      <option value="BINANCE:ETHUSDT" data-symbol="ETHUSDT">Ethereum (ETH/USDT) - Realtime Chart</option>
+      <option value="BINANCE:SOLUSDT" data-symbol="SOLUSDT">Solana (SOL/USDT) - Realtime Chart</option>
+      <option value="FX:EURUSD" data-symbol="EURUSD">EUR/USD - Real Forex</option>
+      <option value="TVC:GOLD" data-symbol="GOLD">Gold (XAU/USD)</option>
     </select>
+  </div>
+
+  <!-- Realtime Candlestick Chart Window -->
+  <div class="chart-container">
+    <div id="tradingview_widget"></div>
   </div>
 
   <div class="market-box">
     <div>
-      <div class="price-label">Current Level</div>
+      <div class="price-label">Live Market Level</div>
       <div class="price-val" id="dispPrice">---</div>
     </div>
     <div style="text-align: right;">
@@ -81,49 +84,67 @@
     </div>
   </div>
 
-  <div class="radar-container">
-    <div class="circle-outer"></div>
-    <div class="circle-spin" id="spinner"></div>
-    <div class="circle-inner" id="radarCenter">🎯</div>
-  </div>
-
-  <div class="status-title" id="statusTitle">Select Asset & Click Analyze</div>
-  <div class="sub-asset" id="subAsset">ATR volatility + Momentum ready</div>
-
   <div class="signal-card" id="signalCard">
     <div class="signal-text" id="signalDecision">DOWN / PUT 🔴</div>
     <div class="signal-details" id="signalDetails">
-      Target: <b>80826.50</b><br>
-      Reason: 1-minute ATR volatility buffer matched.
+      Target: <b>---</b><br>
+      Reason: 1-minute candle scalp target calculation.
     </div>
   </div>
 
-  <button class="btn-generate" id="btnGen" onclick="runAnalysis()">ANALYZE 1M REAL TARGET</button>
+  <button class="btn-generate" id="btnGen" onclick="runAnalysis()">ANALYZE 1M ON LIVE CHART</button>
 
   <script>
     function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
+    // Candle Countdown Timer
     setInterval(() => {
       const now = new Date();
       const sec = 59 - now.getSeconds();
       document.getElementById("candleTimer").innerText = "00:" + (sec < 10 ? "0" + sec : sec);
     }, 1000);
 
+    // Live Candlestick Widget Loader
+    let widget;
+    function loadChart(symbolName) {
+      document.getElementById("tradingview_widget").innerHTML = "";
+      widget = new TradingView.widget({
+        "autosize": true,
+        "symbol": symbolName,
+        "interval": "1",
+        "timezone": "Asia/Kolkata",
+        "theme": "dark",
+        "style": "1",
+        "locale": "en",
+        "toolbar_bg": "#101622",
+        "enable_publishing": false,
+        "hide_top_toolbar": false,
+        "hide_legend": false,
+        "save_image": false,
+        "container_id": "tradingview_widget"
+      });
+    }
+
+    function updateChart() {
+      const symbol = document.getElementById("assetSelect").value;
+      loadChart(symbol);
+      document.getElementById("signalCard").style.display = "none";
+    }
+
+    // Default Load with Bitcoin
+    window.onload = () => {
+      loadChart("BINANCE:BTCUSDT");
+    };
+
     async function runAnalysis() {
-      const asset = document.getElementById("assetSelect").value;
+      const selectElem = document.getElementById("assetSelect");
+      const selectedOption = selectElem.options[selectElem.selectedIndex];
+      const apiSymbol = selectedOption.getAttribute("data-symbol");
       const btn = document.getElementById("btnGen");
-      const statusTitle = document.getElementById("statusTitle");
-      const subAsset = document.getElementById("subAsset");
       const card = document.getElementById("signalCard");
-      const center = document.getElementById("radarCenter");
-      const spinner = document.getElementById("spinner");
 
       btn.disabled = true;
       card.style.display = "none";
-      spinner.style.display = "block";
-      statusTitle.innerText = "Calculating 1M ATR & Momentum...";
-      subAsset.innerText = asset + " • 1-Minute Precise Scalp";
-      center.innerText = "⏳";
 
       let currentPrice = 0;
       let targetPrice = 0;
@@ -132,17 +153,15 @@
 
       try {
         let candles = [];
-        if (asset.includes("USDT")) {
-          const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${asset}&interval=1m&limit=20`);
+        if (apiSymbol.includes("USDT")) {
+          const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${apiSymbol}&interval=1m&limit=20`);
           candles = await res.json();
         } else {
-          // Asia Index math logic based on live BTC benchmark
           const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=20`);
           candles = await res.json();
         }
-        await sleep(500);
+        await sleep(400);
 
-        // Closes, Opens, Highs, Lows
         const closes = candles.map(c => parseFloat(c[4]));
         const opens = candles.map(c => parseFloat(c[1]));
         const highs = candles.map(c => parseFloat(c[2]));
@@ -150,7 +169,7 @@
 
         currentPrice = closes[closes.length - 1];
 
-        // 1-Minute ATR (Average True Range) calculation for last 14 candles
+        // 1-Minute ATR calculation
         let trSum = 0;
         for (let i = candles.length - 14; i < candles.length; i++) {
           const tr = Math.max(highs[i] - lows[i], Math.abs(highs[i] - closes[i - 1]), Math.abs(lows[i] - closes[i - 1]));
@@ -158,59 +177,49 @@
         }
         const atr1m = trSum / 14;
 
-        // Last Candle analysis
         const lastOpen = opens[opens.length - 1];
         const lastClose = closes[closes.length - 1];
         const isGreen = lastClose >= lastOpen;
         const bodySize = Math.abs(lastClose - lastOpen);
         const candleRange = highs[highs.length - 1] - lows[lows.length - 1];
-
-        // Scalp target (fakt 1 candle na 0.6x ATR range jetlo j)
         const scalpBuffer = parseFloat((atr1m * 0.65).toFixed(2));
 
         if (isGreen && bodySize > candleRange * 0.45) {
           decision = "UP";
           targetPrice = (currentPrice + scalpBuffer).toFixed(2);
-          reason = `Strong Buyer Momentum: Next 1 min target +$${scalpBuffer} (${targetPrice}).`;
+          reason = `Bullish Candle Momentum: Target +${scalpBuffer} level hit thashe.`;
         } else if (!isGreen && bodySize > candleRange * 0.45) {
           decision = "DOWN";
           targetPrice = (currentPrice - scalpBuffer).toFixed(2);
-          reason = `Strong Seller Pressure: Next 1 min target -$${scalpBuffer} (${targetPrice}).`;
+          reason = `Bearish Candle Pressure: Target -${scalpBuffer} level hit thashe.`;
         } else {
           decision = "WAIT";
           targetPrice = currentPrice.toFixed(2);
-          reason = `Sideways Doji / Long wick rejection: Next 1 min uncertain chhe, trade avoid karo.`;
+          reason = `Sideways Doji / Long wick rejection: Next 1 min risk chhe, trade avoid karo.`;
         }
 
-        spinner.style.display = "none";
         document.getElementById("dispPrice").innerText = currentPrice.toFixed(2);
         document.getElementById("dispTarget").innerText = targetPrice;
 
         if (decision === "UP") {
-          center.innerText = "🟢";
           card.className = "signal-card signal-buy";
           document.getElementById("signalDecision").innerText = "UP / CALL 🟢";
         } else if (decision === "DOWN") {
-          center.innerText = "🔴";
           card.className = "signal-card signal-sell";
           document.getElementById("signalDecision").innerText = "DOWN / PUT 🔴";
         } else {
-          center.innerText = "⚠️";
           card.className = "signal-card signal-wait";
           document.getElementById("signalDecision").innerText = "WAIT / NO TRADE ⚠️";
         }
 
         document.getElementById("signalDetails").innerHTML = `
           Estimated 1M Target: <b>${targetPrice}</b><br>
-          Analysis: ${reason}
+          Reason: ${reason}
         `;
-        statusTitle.innerText = "1M Prediction Ready!";
         card.style.display = "block";
 
       } catch (err) {
-        spinner.style.display = "none";
-        center.innerText = "❌";
-        statusTitle.innerText = "API Feed Error";
+        alert("Live candle data fetch thavama issue aavyo. Fari try karo.");
       }
 
       btn.disabled = false;
