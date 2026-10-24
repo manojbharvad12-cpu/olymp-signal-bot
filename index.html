@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Olymp Multi-Candle Structure Bot</title>
+  <title>Olymp Smooth Live Tick Scalper</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: #0b0e14; color: #ffffff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 12px; }
@@ -11,7 +11,8 @@
     .header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid #1a2332; }
     .logo { font-size: 15px; font-weight: 800; color: #00e5ff; }
     .status-badge { font-size: 11px; color: #00ff88; display: flex; align-items: center; gap: 5px; background: rgba(0, 255, 136, 0.1); padding: 4px 8px; border-radius: 12px; }
-    .pulse-dot { width: 7px; height: 7px; background-color: #00ff88; border-radius: 50%; box-shadow: 0 0 8px #00ff88; }
+    .pulse-dot { width: 7px; height: 7px; background-color: #00ff88; border-radius: 50%; box-shadow: 0 0 8px #00ff88; animation: pulse 1s infinite; }
+    @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
 
     .timer-bar { width: 100%; margin-top: 8px; background: #121926; border: 1px solid #1f2b3e; border-radius: 8px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
     .timer-sec { font-size: 14px; font-weight: 800; color: #00e5ff; }
@@ -22,33 +23,36 @@
     .chart-container { width: 100%; height: 300px; margin-top: 8px; background: #101622; border: 1px solid #1e293b; border-radius: 10px; overflow: hidden; }
     #tradingview_widget { width: 100%; height: 100%; }
 
-    .analysis-grid { width: 100%; margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .grid-box { background: #101622; border: 1px solid #1e293b; border-radius: 8px; padding: 8px 10px; }
-    .box-title { font-size: 10px; color: #8fa0b5; }
-    .box-val { font-size: 13px; font-weight: 800; color: #fff; margin-top: 2px; }
+    /* Smooth Live Market Ticker */
+    .market-box { width: 100%; margin-top: 10px; background: #101622; border: 1px solid #1e293b; border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
+    .price-label { font-size: 11px; color: #8fa0b5; }
+    .price-val { font-size: 18px; font-weight: 900; color: #fff; margin-top: 2px; transition: color 0.2s ease; }
+    .price-up { color: #00ff88 !important; }
+    .price-down { color: #ff2a55 !important; }
+
+    .target-val { font-size: 15px; color: #00e5ff; font-weight: 800; margin-top: 2px; }
 
     .signal-card { width: 100%; margin-top: 10px; padding: 12px; border-radius: 10px; text-align: center; display: none; }
     .signal-buy { background: linear-gradient(135deg, rgba(0, 230, 118, 0.2), rgba(0, 200, 83, 0.05)); border: 2px solid #00e676; }
     .signal-sell { background: linear-gradient(135deg, rgba(255, 42, 85, 0.2), rgba(213, 0, 0, 0.05)); border: 2px solid #ff2a55; }
     .signal-wait { background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 160, 0, 0.05)); border: 2px solid #ffc107; }
     
-    .signal-text { font-size: 20px; font-weight: 900; }
+    .signal-text { font-size: 22px; font-weight: 900; }
     .signal-buy .signal-text { color: #00e676; }
     .signal-sell .signal-text { color: #ff2a55; }
     .signal-wait .signal-text { color: #ffc107; }
 
-    .signal-details { margin-top: 8px; background: rgba(0,0,0,0.4); border-radius: 6px; padding: 8px; font-size: 11px; line-height: 1.5; text-align: left; }
+    .signal-details { margin-top: 8px; background: rgba(0,0,0,0.4); border-radius: 6px; padding: 8px; font-size: 12px; line-height: 1.5; text-align: left; }
     
-    .btn-generate { width: 100%; margin-top: 10px; background: linear-gradient(90deg, #0088cc, #00e5ff); color: #000; font-weight: 800; font-size: 14px; border: none; cursor: pointer; border-radius: 8px; padding: 12px; }
-    .btn-generate:disabled { opacity: 0.5; }
+    .btn-generate { width: 100%; margin-top: 10px; background: linear-gradient(90deg, #0088cc, #00e5ff); color: #000; font-weight: 800; font-size: 14px; border: none; cursor: pointer; border-radius: 8px; padding: 13px; }
   </style>
   <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 </head>
 <body>
 
   <div class="header">
-    <div class="logo">⚡ AAGAD-PACHHAD SCALPER</div>
-    <div class="status-badge"><span class="pulse-dot"></span> 20-CANDLE SCAN</div>
+    <div class="logo">⚡ SMOOTH TICK SCALPER</div>
+    <div class="status-badge"><span class="pulse-dot"></span> LIVE WEBSOCKET</div>
   </div>
 
   <div class="timer-bar">
@@ -57,12 +61,10 @@
   </div>
 
   <div class="controls">
-    <select id="assetSelect" onchange="updateChart()">
-      <option value="BINANCE:BTCUSDT" data-symbol="BTCUSDT">Bitcoin (BTC/USDT) - Realtime Feed</option>
-      <option value="BINANCE:ETHUSDT" data-symbol="ETHUSDT">Ethereum (ETH/USDT) - Realtime Feed</option>
-      <option value="BINANCE:SOLUSDT" data-symbol="SOLUSDT">Solana (SOL/USDT) - Realtime Feed</option>
-      <option value="FX:EURUSD" data-symbol="EURUSD">EUR/USD - Forex</option>
-      <option value="TVC:GOLD" data-symbol="GOLD">Gold (XAU/USD)</option>
+    <select id="assetSelect" onchange="switchAsset()">
+      <option value="btcusdt" data-tv="BINANCE:BTCUSDT">Bitcoin (BTC/USDT) - Realtime Stream</option>
+      <option value="ethusdt" data-tv="BINANCE:ETHUSDT">Ethereum (ETH/USDT) - Realtime Stream</option>
+      <option value="solusdt" data-tv="BINANCE:SOLUSDT">Solana (SOL/USDT) - Realtime Stream</option>
     </select>
   </div>
 
@@ -70,41 +72,37 @@
     <div id="tradingview_widget"></div>
   </div>
 
-  <div class="analysis-grid">
-    <div class="grid-box">
-      <div class="box-title">Pachhad no Trend (Past)</div>
-      <div class="box-val" id="dispTrend">Scanning...</div>
+  <div class="market-box">
+    <div>
+      <div class="price-label">Live WebSocket Price (Smooth)</div>
+      <div class="price-val" id="dispPrice">Loading...</div>
     </div>
-    <div class="grid-box">
-      <div class="box-title">Current Support / Resist</div>
-      <div class="box-val" id="dispKeyLevel">---</div>
-    </div>
-    <div class="grid-box">
-      <div class="box-title">Current Market Price</div>
-      <div class="box-val" id="dispPrice">---</div>
-    </div>
-    <div class="grid-box">
-      <div class="box-title">Aagad Target Prediction</div>
-      <div class="box-val" style="color:#00e5ff;" id="dispTarget">---</div>
+    <div style="text-align: right;">
+      <div class="price-label">1M Scalp Target</div>
+      <div class="target-val" id="dispTarget">---</div>
     </div>
   </div>
 
   <div class="signal-card" id="signalCard">
-    <div class="signal-text" id="signalDecision">DOWN / PUT 🔴</div>
+    <div class="signal-text" id="signalDecision">UP / CALL 🟢</div>
     <div class="signal-details" id="signalDetails"></div>
   </div>
 
-  <button class="btn-generate" id="btnGen" onclick="runDeepAnalysis()">AAGAD-PACHHAD CHART ANALYZE KARO</button>
+  <button class="btn-generate" id="btnGen" onclick="calculateInstantSignal()">ANALYZE 1M (LIVE TICK CONFIRM)</button>
 
   <script>
-    function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+    let currentSocket = null;
+    let liveTickPrice = 0;
+    let previousTickPrice = 0;
 
+    // Candle Countdown Timer
     setInterval(() => {
       const now = new Date();
       const sec = 59 - now.getSeconds();
       document.getElementById("candleTimer").innerText = "00:" + (sec < 10 ? "0" + sec : sec);
     }, 1000);
 
+    // Live Candlestick Widget
     let widget;
     function loadChart(symbolName) {
       document.getElementById("tradingview_widget").innerHTML = "";
@@ -122,128 +120,94 @@
       });
     }
 
-    function updateChart() {
-      const symbol = document.getElementById("assetSelect").value;
-      loadChart(symbol);
+    // Direct WebSocket for Olymp-like smooth price ticking
+    function connectLiveWebSocket(symbol) {
+      if (currentSocket) {
+        currentSocket.close();
+      }
+
+      currentSocket = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol}@trade`);
+
+      currentSocket.onmessage = function (event) {
+        const msg = JSON.parse(event.data);
+        liveTickPrice = parseFloat(msg.p);
+
+        const priceEl = document.getElementById("dispPrice");
+        priceEl.innerText = liveTickPrice.toFixed(2);
+
+        // Smooth Green / Red flash animation on every single tick
+        if (liveTickPrice > previousTickPrice) {
+          priceEl.className = "price-val price-up";
+        } else if (liveTickPrice < previousTickPrice) {
+          priceEl.className = "price-val price-down";
+        }
+        previousTickPrice = liveTickPrice;
+      };
+    }
+
+    function switchAsset() {
+      const sel = document.getElementById("assetSelect");
+      const streamSymbol = sel.value;
+      const tvSymbol = sel.options[sel.selectedIndex].getAttribute("data-tv");
+      
+      loadChart(tvSymbol);
+      connectLiveWebSocket(streamSymbol);
       document.getElementById("signalCard").style.display = "none";
     }
 
     window.onload = () => {
-      loadChart("BINANCE:BTCUSDT");
+      switchAsset();
     };
 
-    async function runDeepAnalysis() {
-      const selectElem = document.getElementById("assetSelect");
-      const selectedOption = selectElem.options[selectElem.selectedIndex];
-      const apiSymbol = selectedOption.getAttribute("data-symbol");
-      const btn = document.getElementById("btnGen");
+    async function calculateInstantSignal() {
+      const sel = document.getElementById("assetSelect");
+      const symbol = sel.value.toUpperCase();
       const card = document.getElementById("signalCard");
 
-      btn.disabled = true;
-      card.style.display = "none";
+      if (liveTickPrice === 0) return;
 
       try {
-        let fetchSymbol = apiSymbol.includes("USDT") ? apiSymbol : "BTCUSDT";
-        const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${fetchSymbol}&interval=1m&limit=25`);
+        const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1m&limit=15`);
         const candles = await res.json();
-        await sleep(400);
 
         const opens = candles.map(c => parseFloat(c[1]));
         const highs = candles.map(c => parseFloat(c[2]));
         const lows = candles.map(c => parseFloat(c[3]));
         const closes = candles.map(c => parseFloat(c[4]));
 
-        const currentPrice = closes[closes.length - 1];
+        const currentCandleOpen = opens[opens.length - 1];
+        const isGreen = liveTickPrice >= currentCandleOpen;
 
-        // 1. Pachhad no Trend (History: Last 20 candles SMA and Higher-High/Lower-Low)
-        const pastCloses = closes.slice(0, 20);
-        const pastSMA = pastCloses.reduce((a, b) => a + b, 0) / 20;
-        const pastHigh = Math.max(...highs.slice(0, 20));
-        const pastLow = Math.min(...lows.slice(0, 20));
-
-        let trendDirection = currentPrice > pastSMA ? "BULLISH (UPTREND)" : "BEARISH (DOWNTREND)";
-        document.getElementById("dispTrend").innerText = trendDirection;
-
-        // 2. Nearest Key Level (Support & Resistance)
-        let keyLevel = "";
-        let distToHigh = Math.abs(pastHigh - currentPrice);
-        let distToLow = Math.abs(currentPrice - pastLow);
-        if (distToHigh < distToLow) {
-          keyLevel = `Resist: ${pastHigh.toFixed(2)}`;
-        } else {
-          keyLevel = `Support: ${pastLow.toFixed(2)}`;
+        // ATR Calculation
+        let trSum = 0;
+        for (let i = 1; i < candles.length; i++) {
+          trSum += Math.max(highs[i] - lows[i], Math.abs(highs[i] - closes[i - 1]));
         }
-        document.getElementById("dispKeyLevel").innerText = keyLevel;
-        document.getElementById("dispPrice").innerText = currentPrice.toFixed(2);
+        const atr = (trSum / (candles.length - 1)) * 0.65;
 
-        // 3. Chheli 3 Candle Behavior (Recent Momentum + Rejection)
-        const last1Open = opens[opens.length - 1];
-        const last1Close = closes[closes.length - 1];
-        const last1High = highs[highs.length - 1];
-        const last1Low = lows[lows.length - 1];
+        let decision = isGreen ? "UP" : "DOWN";
+        let target = isGreen ? (liveTickPrice + atr).toFixed(2) : (liveTickPrice - atr).toFixed(2);
 
-        const last2Close = closes[closes.length - 2];
-        const last2Open = opens[opens.length - 2];
-
-        const upperWick = last1High - Math.max(last1Open, last1Close);
-        const lowerWick = Math.min(last1Open, last1Close) - last1Low;
-        const totalRange = last1High - last1Low;
-
-        let decision = "WAIT";
-        let targetPrice = 0;
-        let reason = "";
-
-        // Decision Logic combining Past Trend + Present Rejection
-        if (lowerWick > totalRange * 0.40 && currentPrice < pastSMA) {
-          // Down trend ma niche thi rejection aavyo -> Short bounce Up
-          decision = "UP";
-          targetPrice = (currentPrice + (pastSMA - currentPrice) * 0.5).toFixed(2);
-          reason = `Pachhad niche support hit thayo ane lambi wick sathe buyer bounce aavyo. Aagad target ${targetPrice} sudhi test thashe.`;
-        } else if (upperWick > totalRange * 0.40 && currentPrice > pastSMA) {
-          // Up trend ma upar thi rejection aavyo -> Pullback Down
-          decision = "DOWN";
-          targetPrice = (currentPrice - (currentPrice - pastSMA) * 0.5).toFixed(2);
-          reason = `Pachhad upar resistance mathi rejection wick mali. Seller aavya chhe, aagad target ${targetPrice} sudhi down aavshe.`;
-        } else if (last1Close > last1Open && last2Close > last2Open && currentPrice > pastSMA) {
-          // Strong continuous Bullish
-          decision = "UP";
-          targetPrice = (currentPrice + (pastHigh - currentPrice) * 0.6).toFixed(2);
-          reason = `Lagataar 2 Green candles sathe overall trend pan Bullish chhe. Aagad next resistance target ${targetPrice} jashe.`;
-        } else if (last1Close < last1Open && last2Close < last2Open && currentPrice < pastSMA) {
-          // Strong continuous Bearish
-          decision = "DOWN";
-          targetPrice = (currentPrice - (currentPrice - pastLow) * 0.6).toFixed(2);
-          reason = `Lagataar 2 Red candles sathe overall trend Bearish chhe. Aagad next support target ${targetPrice} jashe.`;
-        } else {
-          decision = "WAIT";
-          targetPrice = currentPrice.toFixed(2);
-          reason = `Market ma sideways consolidation chhe. Confirmation nathi etle 1-min trade avoid karo.`;
-        }
-
-        document.getElementById("dispTarget").innerText = targetPrice;
+        document.getElementById("dispTarget").innerText = target;
 
         if (decision === "UP") {
           card.className = "signal-card signal-buy";
           document.getElementById("signalDecision").innerText = "UP / CALL 🟢";
-        } else if (decision === "DOWN") {
+        } else {
           card.className = "signal-card signal-sell";
           document.getElementById("signalDecision").innerText = "DOWN / PUT 🔴";
-        } else {
-          card.className = "signal-card signal-wait";
-          document.getElementById("signalDecision").innerText = "WAIT / NO TRADE ⚠️";
         }
 
         document.getElementById("signalDetails").innerHTML = `
-          <b>Aagad no Target:</b> ${targetPrice}<br>
-          <b>Analysis Reason:</b> ${reason}
+          <b>Real Live Price:</b> ${liveTickPrice.toFixed(2)}<br>
+          <b>1M Scalp Target:</b> ${target}<br>
+          <b>Live Momentum:</b> ${isGreen ? "Buyer Tick Pressure (Green)" : "Seller Tick Pressure (Red)"}
         `;
         card.style.display = "block";
 
-      } catch (err) {
-        alert("Live chart analysis ma issue aavyo. Fari prayatna karo.");
+      } catch (e) {
+        alert("Signal calculation error.");
       }
-
-      btn.disabled = false;
     }
   </script>
 </body>
