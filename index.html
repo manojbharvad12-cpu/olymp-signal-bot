@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Olymp Trade Pro Scalper & Target Bot</title>
+  <title>Olymp Trade Pro 1M Scalper</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: #0b0e14; color: #ffffff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 14px; }
     
     .header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #1a2332; }
-    .logo { font-size: 15px; font-weight: 800; color: #00e5ff; letter-spacing: 0.5px; }
+    .logo { font-size: 15px; font-weight: 800; color: #00e5ff; }
     .status-badge { font-size: 11px; color: #00ff88; display: flex; align-items: center; gap: 5px; background: rgba(0, 255, 136, 0.1); padding: 4px 8px; border-radius: 12px; }
     .pulse-dot { width: 7px; height: 7px; background-color: #00ff88; border-radius: 50%; box-shadow: 0 0 8px #00ff88; }
 
@@ -19,13 +19,10 @@
     .controls { width: 100%; margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
     select, input { background: #141b26; border: 1px solid #243247; color: white; padding: 11px; border-radius: 10px; font-size: 13px; outline: none; width: 100%; font-weight: 600; }
     
-    .manual-input-box { background: #111722; border: 1px dashed #243247; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
-    .manual-row { display: flex; gap: 8px; }
-
     .market-box { width: 100%; margin-top: 12px; background: #101622; border: 1px solid #1e293b; border-radius: 10px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; }
     .price-label { font-size: 11px; color: #8fa0b5; }
     .price-val { font-size: 16px; font-weight: 800; color: #fff; margin-top: 2px; }
-    .target-val { font-size: 13px; color: #ffeb3b; font-weight: 700; margin-top: 2px; }
+    .target-val { font-size: 14px; color: #00e5ff; font-weight: 800; margin-top: 2px; }
 
     .radar-container { margin-top: 16px; position: relative; width: 110px; height: 110px; display: flex; justify-content: center; align-items: center; }
     .circle-outer { position: absolute; width: 100px; height: 100px; border-radius: 50%; border: 2px dashed rgba(0, 229, 255, 0.3); }
@@ -41,12 +38,12 @@
     .signal-sell { background: linear-gradient(135deg, rgba(255, 42, 85, 0.2), rgba(213, 0, 0, 0.05)); border: 2px solid #ff2a55; }
     .signal-wait { background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 160, 0, 0.05)); border: 2px solid #ffc107; }
     
-    .signal-text { font-size: 24px; font-weight: 900; letter-spacing: 0.5px; }
+    .signal-text { font-size: 24px; font-weight: 900; }
     .signal-buy .signal-text { color: #00e676; }
     .signal-sell .signal-text { color: #ff2a55; }
     .signal-wait .signal-text { color: #ffc107; }
 
-    .signal-details { margin-top: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; font-size: 12px; line-height: 1.6; text-align: left; }
+    .signal-details { margin-top: 10px; background: rgba(0,0,0,0.35); border-radius: 8px; padding: 10px; font-size: 12px; line-height: 1.6; text-align: left; }
     
     .btn-generate { width: 100%; margin-top: 14px; background: linear-gradient(90deg, #0088cc, #00e5ff); color: #000; font-weight: 800; font-size: 14px; border: none; cursor: pointer; border-radius: 10px; padding: 13px; }
     .btn-generate:disabled { opacity: 0.5; }
@@ -55,8 +52,8 @@
 <body>
 
   <div class="header">
-    <div class="logo">⚡ SCALPER & TARGET BOT</div>
-    <div class="status-badge"><span class="pulse-dot"></span> LIVE ENGINE</div>
+    <div class="logo">⚡ OLYMP 1M ATR SCALPER</div>
+    <div class="status-badge"><span class="pulse-dot"></span> REAL MATH</div>
   </div>
 
   <div class="timer-bar">
@@ -65,31 +62,12 @@
   </div>
 
   <div class="controls">
-    <select id="assetSelect" onchange="onAssetSwitch()">
-      <optgroup label="Live Public API (Automated Feed)">
-        <option value="BTCUSDT">Bitcoin (BTC/USDT)</option>
-        <option value="ETHUSDT">Ethereum (ETH/USDT)</option>
-        <option value="SOLUSDT">Solana (SOL/USDT)</option>
-      </optgroup>
-      <optgroup label="Broker Index / OTC (Smart Reversal Mode)">
-        <option value="ASIA_IDX" selected>Asia Composite Index</option>
-        <option value="EUR_IDX">Europe Composite Index</option>
-        <option value="OTC_PAIR">EUR/USD (OTC)</option>
-      </optgroup>
+    <select id="assetSelect">
+      <option value="BTCUSDT">Bitcoin (BTC/USDT) - Real Feed</option>
+      <option value="ETHUSDT">Ethereum (ETH/USDT) - Real Feed</option>
+      <option value="SOLUSDT">Solana (SOL/USDT) - Real Feed</option>
+      <option value="ASIA_IDX">Asia Composite Index (Simulated ATR)</option>
     </select>
-
-    <!-- Manual Level helper for Asia Composite & OTC -->
-    <div class="manual-input-box" id="manualBox">
-      <div style="font-size: 11px; color: #8fa0b5;">Asia Composite / OTC Fast Helper (Optional):</div>
-      <div class="manual-row">
-        <input type="number" step="0.0001" id="customPrice" placeholder="Current Price (e.g. 6215.30)">
-        <select id="lastCandleType">
-          <option value="GREEN">Last Candle: Green 🟢</option>
-          <option value="RED">Last Candle: Red 🔴</option>
-          <option value="PINBAR">Pin Bar / Long Wick ⚡</option>
-        </select>
-      </div>
-    </div>
   </div>
 
   <div class="market-box">
@@ -98,7 +76,7 @@
       <div class="price-val" id="dispPrice">---</div>
     </div>
     <div style="text-align: right;">
-      <div class="price-label">Estimated Target Level</div>
+      <div class="price-label">Predicted 1M Target</div>
       <div class="target-val" id="dispTarget">---</div>
     </div>
   </div>
@@ -110,38 +88,26 @@
   </div>
 
   <div class="status-title" id="statusTitle">Select Asset & Click Analyze</div>
-  <div class="sub-asset" id="subAsset">Price action + Target calculation ready</div>
+  <div class="sub-asset" id="subAsset">ATR volatility + Momentum ready</div>
 
   <div class="signal-card" id="signalCard">
-    <div class="signal-text" id="signalDecision">DOWN / SELL 🔴</div>
+    <div class="signal-text" id="signalDecision">DOWN / PUT 🔴</div>
     <div class="signal-details" id="signalDetails">
-      Target: <b>6210.00</b> sudhi down jaine bounce thashe.<br>
-      Reason: Strong Resistance Rejection & Candle Exhaustion.
+      Target: <b>80826.50</b><br>
+      Reason: 1-minute ATR volatility buffer matched.
     </div>
   </div>
 
-  <button class="btn-generate" id="btnGen" onclick="runAnalysis()">ANALYZE 1M & PREDICT TARGET</button>
+  <button class="btn-generate" id="btnGen" onclick="runAnalysis()">ANALYZE 1M REAL TARGET</button>
 
   <script>
     function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-    // Candle Countdown Timer
     setInterval(() => {
       const now = new Date();
       const sec = 59 - now.getSeconds();
       document.getElementById("candleTimer").innerText = "00:" + (sec < 10 ? "0" + sec : sec);
     }, 1000);
-
-    function onAssetSwitch() {
-      const asset = document.getElementById("assetSelect").value;
-      const box = document.getElementById("manualBox");
-      if (asset.includes("USDT")) {
-        box.style.display = "none";
-      } else {
-        box.style.display = "flex";
-      }
-      document.getElementById("signalCard").style.display = "none";
-    }
 
     async function runAnalysis() {
       const asset = document.getElementById("assetSelect").value;
@@ -155,8 +121,8 @@
       btn.disabled = true;
       card.style.display = "none";
       spinner.style.display = "block";
-      statusTitle.innerText = "Analyzing Candles & Support/Resistance...";
-      subAsset.innerText = asset + " • 1M Scalping Calculation";
+      statusTitle.innerText = "Calculating 1M ATR & Momentum...";
+      subAsset.innerText = asset + " • 1-Minute Precise Scalp";
       center.innerText = "⏳";
 
       let currentPrice = 0;
@@ -165,61 +131,59 @@
       let reason = "";
 
       try {
+        let candles = [];
         if (asset.includes("USDT")) {
-          // Public Live API: Binance 1M Klines
-          const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${asset}&interval=1m&limit=30`);
-          const data = await res.json();
-          await sleep(600);
-
-          const closes = data.map(c => parseFloat(c[4]));
-          const highs = data.map(c => parseFloat(c[2]));
-          const lows = data.map(c => parseFloat(c[3]));
-          
-          currentPrice = closes[closes.length - 1];
-          const recentHigh = Math.max(...highs.slice(-10));
-          const recentLow = Math.min(...lows.slice(-10));
-
-          const lastCandleOpen = parseFloat(data[data.length - 1][1]);
-          const isLastGreen = currentPrice > lastCandleOpen;
-
-          if (isLastGreen && (recentHigh - currentPrice) > (currentPrice - recentLow)) {
-            decision = "UP";
-            targetPrice = (currentPrice + (recentHigh - currentPrice) * 0.75).toFixed(2);
-            reason = "Bullish momentum: Next candle target high level.";
-          } else {
-            decision = "DOWN";
-            targetPrice = (currentPrice - (currentPrice - recentLow) * 0.75).toFixed(2);
-            reason = "Bearish pullback: Niche support sudhi move thashe.";
-          }
+          const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${asset}&interval=1m&limit=20`);
+          candles = await res.json();
         } else {
-          // Asia Composite / OTC Helper Logic
-          await sleep(700);
-          const inp = parseFloat(document.getElementById("customPrice").value);
-          const candleType = document.getElementById("lastCandleType").value;
-          currentPrice = !isNaN(inp) && inp > 0 ? inp : 6215.30;
+          // Asia Index math logic based on live BTC benchmark
+          const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=20`);
+          candles = await res.json();
+        }
+        await sleep(500);
 
-          // Support and Resistance Step (Calculated near round numbers)
-          const baseInt = Math.floor(currentPrice);
-          const sup = baseInt - (baseInt % 5); // e.g. 6210
-          const res = sup + 5; // e.g. 6215 or 6220
+        // Closes, Opens, Highs, Lows
+        const closes = candles.map(c => parseFloat(c[4]));
+        const opens = candles.map(c => parseFloat(c[1]));
+        const highs = candles.map(c => parseFloat(c[2]));
+        const lows = candles.map(c => parseFloat(c[3]));
 
-          if (candleType === "RED") {
-            decision = "DOWN";
-            targetPrice = sup.toFixed(2);
-            reason = `Current level ${currentPrice} thi seller strong chhe, ${targetPrice} support sudhi down jaine pachi bounce aavshe.`;
-          } else if (candleType === "PINBAR") {
-            decision = "UP";
-            targetPrice = (currentPrice + 4.5).toFixed(2);
-            reason = `Rejection wick confirm thayi chhe. Niche buyer aavya chhe, ${targetPrice} sudhi Up jump aavshe.`;
-          } else {
-            decision = "UP";
-            targetPrice = (currentPrice + 3.0).toFixed(2);
-            reason = `Green candle continuation: Market ${targetPrice} resistance sudhi push thashe.`;
-          }
+        currentPrice = closes[closes.length - 1];
+
+        // 1-Minute ATR (Average True Range) calculation for last 14 candles
+        let trSum = 0;
+        for (let i = candles.length - 14; i < candles.length; i++) {
+          const tr = Math.max(highs[i] - lows[i], Math.abs(highs[i] - closes[i - 1]), Math.abs(lows[i] - closes[i - 1]));
+          trSum += tr;
+        }
+        const atr1m = trSum / 14;
+
+        // Last Candle analysis
+        const lastOpen = opens[opens.length - 1];
+        const lastClose = closes[closes.length - 1];
+        const isGreen = lastClose >= lastOpen;
+        const bodySize = Math.abs(lastClose - lastOpen);
+        const candleRange = highs[highs.length - 1] - lows[lows.length - 1];
+
+        // Scalp target (fakt 1 candle na 0.6x ATR range jetlo j)
+        const scalpBuffer = parseFloat((atr1m * 0.65).toFixed(2));
+
+        if (isGreen && bodySize > candleRange * 0.45) {
+          decision = "UP";
+          targetPrice = (currentPrice + scalpBuffer).toFixed(2);
+          reason = `Strong Buyer Momentum: Next 1 min target +$${scalpBuffer} (${targetPrice}).`;
+        } else if (!isGreen && bodySize > candleRange * 0.45) {
+          decision = "DOWN";
+          targetPrice = (currentPrice - scalpBuffer).toFixed(2);
+          reason = `Strong Seller Pressure: Next 1 min target -$${scalpBuffer} (${targetPrice}).`;
+        } else {
+          decision = "WAIT";
+          targetPrice = currentPrice.toFixed(2);
+          reason = `Sideways Doji / Long wick rejection: Next 1 min uncertain chhe, trade avoid karo.`;
         }
 
         spinner.style.display = "none";
-        document.getElementById("dispPrice").innerText = currentPrice;
+        document.getElementById("dispPrice").innerText = currentPrice.toFixed(2);
         document.getElementById("dispTarget").innerText = targetPrice;
 
         if (decision === "UP") {
@@ -237,23 +201,20 @@
         }
 
         document.getElementById("signalDetails").innerHTML = `
-          Estimated Target: <b>${targetPrice}</b><br>
+          Estimated 1M Target: <b>${targetPrice}</b><br>
           Analysis: ${reason}
         `;
-        statusTitle.innerText = "Prediction & Target Ready!";
+        statusTitle.innerText = "1M Prediction Ready!";
         card.style.display = "block";
 
       } catch (err) {
         spinner.style.display = "none";
         center.innerText = "❌";
-        statusTitle.innerText = "Calculation Error";
+        statusTitle.innerText = "API Feed Error";
       }
 
       btn.disabled = false;
     }
-
-    // initialize view
-    onAssetSwitch();
   </script>
 </body>
 </html>
